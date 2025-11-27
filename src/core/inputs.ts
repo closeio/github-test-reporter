@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import { Inputs } from '../types/reporter'
 import { Arguments } from './cli'
-import { IntegrationsConfig } from 'src/types/integrations'
+import { IntegrationsConfig, AIStandaloneConfig } from 'src/types/integrations'
 
 export function getCliInputs(args: Arguments): Inputs {
   const groupBy: 'suite' | 'filePath' =
@@ -20,6 +20,7 @@ export function getCliInputs(args: Arguments): Inputs {
     collapseLargeReports: false,
     summaryReport: args._.includes('summary'),
     summaryDeltaReport: args._.includes('summary-delta'),
+    testsChangedReport: args._.includes('tests-changed'),
     githubReport: args._.includes('github'),
     testReport: args._.includes('tests'),
     testListReport: args._.includes('test-list'),
@@ -30,6 +31,7 @@ export function getCliInputs(args: Arguments): Inputs {
     failedFoldedReport: args._.includes('failed-folded'),
     previousResultsReport: args._.includes('historical'),
     aiReport: args._.includes('ai'),
+    aiSummaryReport: args._.includes('ai-summary'),
     skippedReport: args._.includes('skipped'),
     suiteFoldedReport: args._.includes('suite-folded'),
     suiteListReport: args._.includes('suite-list'),
@@ -61,6 +63,7 @@ export function getCliInputs(args: Arguments): Inputs {
     writeCtrfToFile: '',
     uploadArtifact: false,
     integrationsConfig: {},
+    ai: {},
     groupBy: groupBy,
     alwaysGroupBy: false,
     statusCheck: false,
@@ -105,6 +108,8 @@ export function getInputs(): Inputs {
     summaryReport: core.getInput('summary-report').toLowerCase() === 'true',
     summaryDeltaReport:
       core.getInput('summary-delta-report').toLowerCase() === 'true',
+    testsChangedReport:
+      core.getInput('tests-changed-report').toLowerCase() === 'true',
     testReport: core.getInput('test-report').toLowerCase() === 'true',
     testListReport: core.getInput('test-list-report').toLowerCase() === 'true',
     failedReport: core.getInput('failed-report').toLowerCase() === 'true',
@@ -117,6 +122,8 @@ export function getInputs(): Inputs {
     previousResultsReport:
       core.getInput('previous-results-report').toLowerCase() === 'true',
     aiReport: core.getInput('ai-report').toLowerCase() === 'true',
+    aiSummaryReport:
+      core.getInput('ai-summary-report').toLowerCase() === 'true',
     skippedReport: core.getInput('skipped-report').toLowerCase() === 'true',
     suiteFoldedReport:
       core.getInput('suite-folded-report').toLowerCase() === 'true',
@@ -170,6 +177,7 @@ export function getInputs(): Inputs {
     integrationsConfig: JSON.parse(
       core.getInput('integrations-config') || '{}'
     ) as IntegrationsConfig,
+    ai: JSON.parse(core.getInput('ai') || '{}') as AIStandaloneConfig,
     statusCheck: core.getInput('status-check').toLowerCase() === 'true',
     statusCheckName:
       core.getInput('status-check-name') || 'Test Reporter Results',

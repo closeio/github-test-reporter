@@ -11,13 +11,23 @@ import { prepareReport } from '../ctrf'
 import { handleViewsAndComments, handleAnnotations } from '../github/handler'
 import * as core from '@actions/core'
 import { processIntegrations } from 'src/integrations/handler'
+import {
+  handleStandaloneAIIntegration,
+  generateAISummary
+} from 'src/integrations/ai'
 export async function runAction(): Promise<void> {
   try {
     const inputs = getInputs()
     const githubContext = getAllGitHubContext()
 
     const report = await prepareReport(inputs, githubContext)
+
+    await handleStandaloneAIIntegration(inputs.ai, report)
     await processIntegrations(inputs.integrationsConfig, report)
+
+    if (inputs.aiSummaryReport) {
+      await generateAISummary(inputs.ai, report)
+    }
 
     await handleViewsAndComments(inputs, report)
     handleAnnotations(inputs, report)

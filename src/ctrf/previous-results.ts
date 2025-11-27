@@ -1,4 +1,4 @@
-import { Report } from 'ctrf'
+import { Report } from '../ctrf/core/types/ctrf'
 import { Inputs, PreviousResult } from '../types'
 
 /**
@@ -16,7 +16,8 @@ export function shouldProcessPreviousResults(inputs: Inputs): boolean {
     inputs.insightsReport ||
     inputs.slowestReport ||
     inputs.fetchPreviousResults ||
-    inputs.summaryDeltaReport
+    inputs.summaryDeltaReport ||
+    inputs.testsChangedReport
   )
 }
 

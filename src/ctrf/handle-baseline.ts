@@ -1,6 +1,6 @@
-import { readReportFromFile } from 'ctrf'
+import { readReportFromFile } from '../ctrf/core/src/methods/read-reports'
 import * as core from '@actions/core'
-import type { Report } from 'ctrf'
+import type { Report } from '../ctrf/core/types/ctrf'
 import { Inputs } from '../types'
 
 /**
@@ -36,10 +36,13 @@ export function handleBaseline(
           reportId: baselineReport.reportId ?? '',
           source: baselineReport.results?.environment?.buildUrl ?? '',
           timestamp: baselineReport.timestamp ?? '',
+          commit: baselineReport.results?.environment?.commit ?? '',
+          buildName: baselineReport.results?.environment?.buildName ?? '',
+          buildNumber:
+            baselineReport.results?.environment?.buildNumber ?? undefined,
+          buildUrl: baselineReport.results?.environment?.buildUrl ?? '',
           extra: {
-            buildId: baselineReport.results?.environment?.buildId ?? '',
-            buildNumber: baselineReport.results?.environment?.buildNumber ?? '',
-            buildName: baselineReport.results?.environment?.buildName ?? ''
+            buildId: baselineReport.results?.environment?.buildId ?? ''
           }
         }
       }
@@ -63,11 +66,13 @@ export function handleBaseline(
         reportId: baselineReport.reportId ?? '',
         timestamp: baselineReport.timestamp ?? '',
         source: baselineReport.results?.environment?.buildUrl ?? '',
-
+        commit: baselineReport.results?.environment?.commit ?? '',
+        buildName: baselineReport.results?.environment?.buildName ?? '',
+        buildNumber:
+          baselineReport.results?.environment?.buildNumber ?? undefined,
+        buildUrl: baselineReport.results?.environment?.buildUrl ?? '',
         extra: {
-          buildId: baselineReport.results?.environment?.buildId ?? '',
-          buildNumber: baselineReport.results?.environment?.buildNumber ?? '',
-          buildName: baselineReport.results?.environment?.buildName ?? ''
+          buildId: baselineReport.results?.environment?.buildId ?? ''
         }
       }
     }

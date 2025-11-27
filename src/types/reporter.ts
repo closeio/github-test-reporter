@@ -1,4 +1,4 @@
-import { IntegrationsConfig } from './integrations'
+import { IntegrationsConfig, AIStandaloneConfig } from './integrations'
 
 export interface Inputs {
   templatePath?: string
@@ -9,6 +9,7 @@ export interface Inputs {
   collapseLargeReports: boolean
   summaryReport: boolean
   summaryDeltaReport: boolean
+  testsChangedReport: boolean
   githubReport: boolean
   testReport: boolean
   testListReport: boolean
@@ -19,6 +20,7 @@ export interface Inputs {
   failedFoldedReport: boolean
   previousResultsReport: boolean
   aiReport: boolean
+  aiSummaryReport: boolean
   skippedReport: boolean
   suiteFoldedReport: boolean
   suiteListReport: boolean
@@ -52,6 +54,7 @@ export interface Inputs {
   groupBy: 'suite' | 'filePath'
   alwaysGroupBy: boolean
   integrationsConfig: IntegrationsConfig
+  ai: AIStandaloneConfig | object
   statusCheck: boolean
   statusCheckName: string
   reportOrder: string[]

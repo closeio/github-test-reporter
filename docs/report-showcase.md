@@ -7,7 +7,9 @@ execution.
 
 - [Report Showcase](#report-showcase)
   - [Summary Report](#summary-report)
+  - [Summary Delta Report](#summary-delta-report)
   - [GitHub Report](#github-report)
+  - [AI Report](#ai-report)
   - [Test Report](#test-report)
   - [Test List Report](#test-list-report)
   - [Failed Report](#failed-report)
@@ -17,8 +19,8 @@ execution.
   - [Failed Folded Report](#failed-folded-report)
   - [Previous Results Report](#previous-results-report)
   - [Insights Report](#insights-report)
+  - [Tests Changed Report](#tests-changed-report)
   - [Slowest Report](#slowest-report)
-  - [AI Report](#ai-report)
   - [Skipped Report](#skipped-report)
   - [Suite Folded Report](#suite-folded-report)
   - [Suite List Report](#suite-list-report)
@@ -79,8 +81,6 @@ Set the `summary-delta-report` input to true in your workflow configuration:
 | **Tests 📝** | **Passed ✅** | **Failed ❌** | **Skipped ⏭️** | **Other ❓** | **Flaky 🍂** | **Duration ⏱️** |
 | --- | --- | --- | --- | --- | --- | --- |
 | **58**&nbsp;&nbsp;&nbsp;&nbsp;*↑2* | **58**&nbsp;&nbsp;&nbsp;&nbsp;*±0* | **0**&nbsp;&nbsp;&nbsp;&nbsp;*±0* | **0**&nbsp;&nbsp;&nbsp;&nbsp;*±0* | **0**&nbsp;&nbsp;&nbsp;&nbsp;*±0* | **0**&nbsp;&nbsp;&nbsp;&nbsp;*±0* | **11.2s**&nbsp;&nbsp;&nbsp;&nbsp;*↓2ms* |
-
-
 
 ## File Report
 
@@ -269,7 +269,95 @@ Set the `github-report` input to true in your workflow configuration:
 ---
 
 ![GitHub Report](../images/github.png)
-![GitHub Report](../images/github-failed.png)
+
+## AI Report
+
+### Overview
+
+Leverages AI-generated insights to provide detailed summaries for failed tests. For each failure, the report includes an AI-powered explanation of potential causes and suggested solutions to help developers quickly identify and resolve issues. If no AI summary is available for a particular test, the report indicates this clearly. This report is especially useful for streamlining debugging processes and enhancing test reliability by offering actionable insights directly within the test report.
+
+### Usage
+
+Requires AI configuration to be provided.
+
+Set the `ai-report` input to true in your workflow configuration:
+
+```yaml
+- name: Publish Test Report
+  uses: ctrf-io/github-test-reporter@v1
+  with:
+    report-path: './ctrf/*.json'
+    ai-report: true
+    ai: |
+      {
+        "provider": "openai",
+        "model": "gpt-4",
+      }
+  if: always()
+  env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+---
+
+<table>
+    <thead>
+        <tr>
+            <th>Failed Tests</th>
+            <th>AI Summary ✨</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+            <td>❌ should display title</td>
+            <td>The test failed because the page title didn't match the expected value within the given timeout period.<br><br>To resolve this issue, you should first check if the title of the page is correct in your application. It seems there might be a typo or a misunderstanding about what the actual title should be. If 'Common Test Report Format' is indeed the correct title, you'll need to update your test expectations. On the other hand, if 'Uncommon Test Report Format' is the intended title, you'll need to fix the title in your application code.<br><br>Another possibility is that the page might be taking longer to load than expected, causing the title to not appear within the 5-second timeout. In this case, you could try increasing the timeout duration in your test to give the page more time to load completely.</td>
+        </tr><tr>
+            <td>❌ should fail to update profile on network failure</td>
+            <td>No AI summary available</td>
+        </tr><tr>
+            <td>❌ should fail to update profile on network failure</td>
+            <td>No AI summary available</td>
+        </tr>    </tbody>
+</table>
+
+## Tests Changed Report
+
+### Overview
+
+Displays tests that have been added or removed compared to a baseline or previous run. This report helps track test suite evolution over time by showing exactly which tests are new and which have been removed. Each test is listed with its name and suite hierarchy, making it easy to identify changes in your test coverage.
+
+Requires previous test results or a baseline for comparison.
+
+### Usage
+
+Set the `tests-changed-report` input to true in your workflow configuration:
+
+```yaml
+- name: Publish Test Report
+  uses: ctrf-io/github-test-reporter@v1
+  with:
+    report-path: './ctrf/*.json'
+    tests-changed-report: true
+  if: always()
+```
+
+---
+
+**3 new tests added, 1 removed**
+
+### Added ➕
+
+| **Name** | **Suite** |
+| --- | --- |
+| should handle async operations correctly | API Tests > Authentication |
+| should validate user input | API Tests > Validation |
+| should cache results properly | Performance Tests |
+
+### Removed ➖
+
+| **Name** | **Suite** |
+| --- | --- |
+| deprecated legacy test | Legacy Suite > Old Tests |
 
 ## Test Report
 
@@ -425,7 +513,7 @@ excluding any retries. This metric identifies tests with consistent failures,
 enabling teams to prioritize fixes and improve overall test reliability.
 
 Use the `previous-results-max` input to state how many previous results to
-include in the calculation. The default is 10.
+include in the calculation.
 
 This report goes nicely with the insights-report, flaky-rate-report, and
 slowest-report to provide a comprehensive view of the performance of your tests
@@ -516,7 +604,7 @@ initially but pass upon retry. Using test retries is essential for detecting
 flaky tests within CTRF.
 
 Use the `previous-results-max` input to state how many previous results to
-include in the calculation. The default is 10.
+include in the calculation.
 
 This report goes fits nicely with the insights-report, fail-rate-report, and
 slowest-report to provide a comprehensive view of the performance of your tests
@@ -755,51 +843,6 @@ Set the `slowest-report` input to true in your workflow configuration:
 | handler.test.ts &gt; createStatusCheck - createStatusCheck should truncate summary if it exceeds 65000 characters | 1 | 0 | 0% | 1ms |
 
 <sub><i>Measured over 2 runs.</i></sub>
-
-## AI Report
-
-Leverages AI-generated insights to provide detailed summaries for failed tests.
-For each failure, the report includes an AI-powered explanation of potential
-causes and suggested solutions to help developers quickly identify and resolve
-issues. If no AI summary is available for a particular test, the report
-indicates this clearly. This report is especially useful for streamlining
-debugging processes and enhancing test reliability by offering actionable
-insights directly within the test report.
-
-### Usage
-
-Set the `ai-report` input to true in your workflow configuration:
-
-```yaml
-- name: Publish Test Report
-  uses: ctrf-io/github-test-reporter@v1
-  with:
-    report-path: './ctrf/*.json'
-    ai-report: true
-  if: always()
-```
-
----
-
-<table>
-    <thead>
-        <tr>
-            <th>Failed Tests</th>
-            <th>AI Summary ✨</th>
-        </tr>
-    </thead>
-    <tbody>
-<tr>
-            <td>❌ should display title</td>
-            <td>The test failed because the page title didn't match the expected value within the given timeout period.<br><br>To resolve this issue, you should first check if the title of the page is correct in your application. It seems there might be a typo or a misunderstanding about what the actual title should be. If 'Common Test Report Format' is indeed the correct title, you'll need to update your test expectations. On the other hand, if 'Uncommon Test Report Format' is the intended title, you'll need to fix the title in your application code.<br><br>Another possibility is that the page might be taking longer to load than expected, causing the title to not appear within the 5-second timeout. In this case, you could try increasing the timeout duration in your test to give the page more time to load completely.</td>
-        </tr><tr>
-            <td>❌ should fail to update profile on network failure</td>
-            <td>No AI summary available</td>
-        </tr><tr>
-            <td>❌ should fail to update profile on network failure</td>
-            <td>No AI summary available</td>
-        </tr>    </tbody>
-</table>
 
 ## Skipped Report
 

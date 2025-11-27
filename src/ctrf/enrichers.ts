@@ -1,5 +1,5 @@
 import { GitHubContext } from '../types'
-import { Report } from 'ctrf'
+import { Report } from '../ctrf/core/types/ctrf'
 
 /**
  * Enriches the current CTRF report with details from the GitHub Actions context.
@@ -33,6 +33,18 @@ export function enrichCurrentReportWithRunDetails(
   if (!extendedReport.results.environment.branchName) {
     extendedReport.results.environment.branchName =
       run.ref?.replace('refs/heads/', '') || ''
+  }
+
+  if (!extendedReport.results.environment.commit) {
+    extendedReport.results.environment.commit = run.sha
+  }
+
+  if (!extendedReport.results.environment.repositoryName) {
+    extendedReport.results.environment.repositoryName = run.repoName
+  }
+
+  if (!extendedReport.results.environment.repositoryUrl) {
+    extendedReport.results.environment.repositoryUrl = run.repository.html_url
   }
 
   return extendedReport

@@ -30,6 +30,11 @@ inputs:
     description: 'Include the summary delta report.'
     required: false
     default: false
+  tests-changed-report:
+    description:
+      'Include the tests changed report showing added and removed tests.'
+    required: false
+    default: false
   github-report:
     description: 'Include the GitHub report.'
     required: false
@@ -68,6 +73,12 @@ inputs:
     default: false
   ai-report:
     description: 'Include the AI analysis report.'
+    required: false
+    default: false
+  ai-summary-report:
+    description:
+      'Include the AI summary report with structured analysis (summary, code
+      issues, timeout issues, application issues, recommendations)'
     required: false
     default: false
   skipped-report:
@@ -257,6 +268,15 @@ inputs:
     default: ''
 
   # Integration Configuration
+  ai:
+    description: >
+      JSON configuration for AI-powered test analysis. Supports multiple AI
+      providers including OpenAI, Claude, Gemini, Grok, Deepseek, Mistral,
+      Perplexity, Azure OpenAI, OpenRouter, and AWS Bedrock. Example:
+      '{"provider": "openai", "model": "gpt-4", "temperature": 0.7, "maxTokens":
+      2000}'
+    required: false
+    default: '{}'
   integrations-config:
     description:
       'JSON configuration for integrations with other developer tools'

@@ -1,5 +1,5 @@
 import { Inputs, ReportConditionals } from '../../src/types'
-import { Report } from 'ctrf'
+import { Report } from '../../src/ctrf/core/types/ctrf'
 import { addFooterDisplayFlags } from '../../src/ctrf/report-conditionals'
 
 describe('addFooterDisplayFlags', () => {
@@ -382,6 +382,20 @@ describe('addFooterDisplayFlags', () => {
         ?.reportConditionals as ReportConditionals
       expect(reportConditionals.showSkippedReports).toBe(true)
     })
+
+    it('should show skipped reports when pending tests exist', () => {
+      const report = createBaseReport()
+      report.results.summary.pending = 1
+      report.results.tests = [
+        { name: 'test1', status: 'pending', duration: 100 }
+      ]
+
+      addFooterDisplayFlags(report, createMultipleReportsInputs())
+
+      const reportConditionals = report.extra
+        ?.reportConditionals as ReportConditionals
+      expect(reportConditionals.showSkippedReports).toBe(true)
+    })
   })
 
   describe('Measured Over Footer', () => {
@@ -477,6 +491,7 @@ function createSingleReportInputs(): Inputs {
     collapseLargeReports: false,
     summaryReport: true, // Only 1 report enabled
     summaryDeltaReport: false,
+    testsChangedReport: false,
     githubReport: false,
     testReport: false,
     testListReport: false,
@@ -487,6 +502,7 @@ function createSingleReportInputs(): Inputs {
     failedFoldedReport: false,
     previousResultsReport: false,
     aiReport: false,
+    aiSummaryReport: false,
     skippedReport: false,
     suiteFoldedReport: false,
     suiteListReport: false,
@@ -520,6 +536,7 @@ function createSingleReportInputs(): Inputs {
     groupBy: 'suite',
     alwaysGroupBy: false,
     integrationsConfig: {},
+    ai: {},
     statusCheck: false,
     statusCheckName: '',
     reportOrder: []

@@ -211,4 +211,3 @@ Actions available:
 ```
 
 See the [JUnit to CTRF](https://github.com/ctrf-io/junit-to-ctrf) for more information.
-

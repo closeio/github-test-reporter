@@ -6,6 +6,7 @@ const basePath = getBasePath('reports');
 export const BuiltInReports = {
   SummaryTable: join(basePath, 'summary-table.hbs'),
   SummaryDeltaTable: join(basePath, 'summary-delta-table.hbs'),
+  TestsChangedTable: join(basePath, 'tests-changed-table.hbs'),
   TestTable: join(basePath, 'test-table.hbs'),
   TestList: join(basePath, 'test-list.hbs'),
   FailedTable: join(basePath, 'failed-table.hbs'),
@@ -15,6 +16,7 @@ export const BuiltInReports = {
   FlakyTable: join(basePath, 'flaky-table.hbs'),
   FlakyRateTable: join(basePath, 'flaky-rate-table.hbs'),
   AiTable: join(basePath, 'ai-table.hbs'),
+  AiSummaryReport: join(basePath, 'ai-summary-report.hbs'),
   PreviousResultsTable: join(basePath, 'previous-results-table.hbs'),
   PullRequest: join(basePath, 'pull-request.hbs'),
   SuiteFolded: join(basePath, 'suite-folded.hbs'),

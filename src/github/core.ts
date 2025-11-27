@@ -1,14 +1,15 @@
 import * as core from '@actions/core'
 import { limitPreviousReports, stripAnsi, getEmoji } from '../ctrf'
 import { generateMarkdown } from '../handlebars/core'
-import { Inputs, ReportConditionals } from '../types'
-import { Report } from 'ctrf'
+import { Inputs, PreviousResult, ReportConditionals } from '../types'
+import { Report } from '../ctrf/core/types/ctrf'
 import { readTemplate, reportTypeToInputKey } from '../utils'
 import { BuiltInReports, getBasePath } from '../reports/core'
 import { COMMUNITY_REPORTS_PATH } from '../config'
 import { DEFAULT_REPORT_ORDER } from '../reports/constants'
 import { join } from 'path'
 import { isAnyReportEnabled } from '../utils/report-utils'
+import { context } from '@actions/github'
 
 /**
  * Generates various views of the CTRF report and adds them to the GitHub Actions summary.
@@ -17,6 +18,9 @@ import { isAnyReportEnabled } from '../utils/report-utils'
  * @param report - The CTRF report to generate views from.
  */
 export function generateViews(inputs: Inputs, report: Report): void {
+  const hasPreviousResults =
+    ((report.extra?.previousResults as PreviousResult[])?.length ?? 0) > 0
+
   if (inputs.title) {
     core.summary.addHeading(inputs.title, 2).addEOL().addEOL()
   }
@@ -27,8 +31,11 @@ export function generateViews(inputs: Inputs, report: Report): void {
     core.info(
       'No specific report selected. Generating default reports: summary, failed, flaky, skipped, and tests.'
     )
-
-    addViewToSummary('### Summary', BuiltInReports.SummaryTable, report)
+    if (hasPreviousResults === false) {
+      addViewToSummary('### Summary', BuiltInReports.SummaryTable, report)
+    } else {
+      addViewToSummary('### Summary', BuiltInReports.SummaryDeltaTable, report)
+    }
     if (reportConditionals?.showFailedReports) {
       addViewToSummary('### Failed Tests', BuiltInReports.FailedTable, report)
     } else {
@@ -128,7 +135,7 @@ function addFooter(): void {
 /**
  * Adds appropriate footers based on the report's footer display flags
  */
-function addReportFooters(
+export function addReportFooters(
   report: Report,
   inputs: Inputs,
   hasPreviousResultsReports: boolean
@@ -136,6 +143,25 @@ function addReportFooters(
   const reportConditionals = report.extra
     ?.reportConditionals as ReportConditionals
   const footerMessages: string[] = []
+
+  if (report.baseline && hasPreviousResultsReports) {
+    let comparisonText = `± Comparison with `
+    if (report.baseline.buildNumber || report.baseline.buildName) {
+      const buildDisplay = report.baseline.buildNumber
+      if (report.baseline.buildUrl) {
+        comparisonText += `run [#${buildDisplay}](${report.baseline.buildUrl})`
+      } else {
+        comparisonText += `run #${buildDisplay}`
+      }
+    }
+    if (report.baseline.commit) {
+      const commitSha = report.baseline.commit.substring(0, 7)
+      const commitUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/commit/${report.baseline.commit}`
+      comparisonText += ` at [${commitSha}](${commitUrl})`
+    }
+
+    footerMessages.push(comparisonText)
+  }
 
   if (reportConditionals.includeFailedReportCurrentFooter) {
     footerMessages.push(`🎉 No failed tests in this run.`)
@@ -196,12 +222,22 @@ function generateReportByType(
   inputs: Inputs,
   report: Report
 ): void {
+  const hasPreviousResults =
+    ((report.extra?.previousResults as PreviousResult[])?.length ?? 0) > 0
   const reportConditionals = report.extra
     ?.reportConditionals as ReportConditionals
   switch (reportType) {
     case 'summary-report':
       core.info('Adding summary report to summary')
-      addViewToSummary('### Summary', BuiltInReports.SummaryTable, report)
+      if (hasPreviousResults === false) {
+        addViewToSummary('### Summary', BuiltInReports.SummaryTable, report)
+      } else {
+        addViewToSummary(
+          '### Summary',
+          BuiltInReports.SummaryDeltaTable,
+          report
+        )
+      }
       break
     case 'summary-delta-report':
       core.info('Adding summary delta report to summary')
@@ -286,6 +322,22 @@ function generateReportByType(
       } else {
         core.info('No AI analysis to display, skipping ai-report')
       }
+      break
+    case 'ai-summary-report':
+      core.info('Adding AI summary report to summary')
+      addViewToSummary(
+        '### AI Test Summary',
+        BuiltInReports.AiSummaryReport,
+        report
+      )
+      break
+    case 'tests-changed-report':
+      core.info('Adding tests changed report to summary')
+      addViewToSummary(
+        '### Test Changes',
+        BuiltInReports.TestsChangedTable,
+        report
+      )
       break
     case 'pull-request-report':
       core.info('Adding pull request report to summary')
