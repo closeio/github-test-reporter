@@ -107,7 +107,7 @@
     "lodash": ">=4.18.0"
   },
   "dependencies": {
-    "@actions/artifact": "^4.0.0",
+    "@actions/artifact": "^6.2.1",
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.0",
     "@octokit/plugin-retry": "^7.2.0",
