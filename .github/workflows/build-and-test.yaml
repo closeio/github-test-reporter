@@ -10,16 +10,42 @@ on:
   schedule:
     - cron: '0 2 * * *'
 
+permissions: {}
+
 jobs:
-  build-and-test:
+  check-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      - name: Install dependencies
+        run: npm install
+      - name: Rebuild dist
+        run: npm run package
+      - name: Check for uncommitted build changes
+        run: |
+          if ! git diff --exit-code dist/; then
+            echo "::error::dist/ is out of date. Run 'npm run all' locally and commit the result."
+            exit 1
+          fi
+
+  build-and-test:
+    needs: check-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: npm install
       - name: Build
-        run: npm run all:action
+        run: npm run all
       - name: Publish Test Report
         uses: ./
         with:
@@ -60,9 +86,11 @@ jobs:
   standard-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Basic Test Report
         uses: ./
         with:
@@ -73,9 +101,12 @@ jobs:
   github-report-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Detailed Test Report
         uses: ./
         with:
@@ -88,9 +119,12 @@ jobs:
   detailed-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Detailed Test Report
         uses: ./
         with:
@@ -104,9 +138,12 @@ jobs:
   failed-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Failed Test Reports
         uses: ./
         with:
@@ -120,9 +157,12 @@ jobs:
   flaky-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Flaky Test Reports
         uses: ./
         with:
@@ -135,9 +175,11 @@ jobs:
   ai-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: AI Test Reports
         uses: ./
         with:
@@ -149,9 +191,11 @@ jobs:
   skipped-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Skipped Test Reports
         uses: ./
         with:
@@ -162,9 +206,11 @@ jobs:
   suite-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Suite Test Reports
         uses: ./
         with:
@@ -176,9 +222,11 @@ jobs:
   commit-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Commit Test Reports
         uses: ./
         with:
@@ -189,9 +237,11 @@ jobs:
   custom-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Custom Test Reports
         uses: ./
         with:
@@ -203,9 +253,11 @@ jobs:
   community-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Community Test Reports
         uses: ./
         with:
@@ -217,9 +269,13 @@ jobs:
   previous-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      actions: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: npm install
       - name: Modify reports
@@ -240,9 +296,12 @@ jobs:
   report-order-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: npm install
       - name: Modify reports
@@ -262,9 +321,12 @@ jobs:
   collapse-large-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: npm install
       - name: Modify reports
@@ -283,9 +345,12 @@ jobs:
   junit-to-ctrf-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: npm install
       - name: Modify reports
@@ -316,9 +381,12 @@ jobs:
   file-reports-test:
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install dependencies
         run: npm install
       - name: Modify reports

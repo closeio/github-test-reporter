@@ -5,13 +5,13 @@ import {
   listComments,
   addCommentToIssue,
   deleteComment
-} from '../client/github'
-import { Inputs } from '../types'
-import { Report } from '../ctrf/core/types/ctrf'
-import { generateViews, annotateFailed } from './core'
+} from '../client/github/index.js'
+import { Inputs } from '../types/index.js'
+import type { CTRFReport } from 'ctrf'
+import { generateViews, annotateFailed } from './core.js'
 import { components } from '@octokit/openapi-types'
-import { createCheckRun } from '../client/github/checks'
-import { checkReportSize } from '../utils/report-utils'
+import { createCheckRun } from '../client/github/checks.js'
+import { checkReportSize } from '../utils/report-utils.js'
 
 type IssueComment = components['schemas']['issue-comment']
 const UPDATE_EMOJI = '🔄'
@@ -29,7 +29,7 @@ const UPDATE_EMOJI = '🔄'
  */
 export async function handleViewsAndComments(
   inputs: Inputs,
-  report: Report
+  report: CTRFReport
 ): Promise<void> {
   core.startGroup(`📝 Generating reports`)
   const INVISIBLE_MARKER = inputs.commentTag
@@ -73,7 +73,7 @@ export async function handleViewsAndComments(
  */
 export function shouldAddCommentToPullRequest(
   inputs: Inputs,
-  report: Report
+  report: CTRFReport
 ): boolean {
   const shouldAddComment =
     (inputs.onFailOnly && report.results.summary.failed > 0) ||
@@ -95,7 +95,7 @@ export function shouldAddCommentToPullRequest(
  * @param inputs - The user-provided inputs for configuring annotations.
  * @param report - The CTRF report containing test results.
  */
-export function handleAnnotations(inputs: Inputs, report: Report): void {
+export function handleAnnotations(inputs: Inputs, report: CTRFReport): void {
   if (inputs.annotate) {
     core.startGroup(`🔍 Annotating failed tests`)
     core.info('Annotating failed tests')
@@ -268,6 +268,47 @@ async function postOrUpdateIssueComment(
 }
 
 /**
+ * Formats the test summary into a string like "10 passed, 1 failed, 2 skipped".
+ * @param summary - The test summary object
+ * @returns Formatted summary string
+ */
+function formatTestSummary(summary: {
+  passed: number
+  failed: number
+  skipped: number
+  pending: number
+  other: number
+}): string {
+  const parts: string[] = []
+
+  if (summary.passed > 0) {
+    parts.push(`${summary.passed} passed`)
+  }
+
+  if (summary.failed > 0) {
+    parts.push(`${summary.failed} failed`)
+  }
+
+  if (summary.skipped > 0) {
+    parts.push(`${summary.skipped} skipped`)
+  }
+
+  if (summary.pending > 0) {
+    parts.push(`${summary.pending} pending`)
+  }
+
+  if (summary.other > 0) {
+    parts.push(`${summary.other} other`)
+  }
+
+  if (parts.length === 0) {
+    return 'No tests'
+  }
+
+  return parts.join(', ')
+}
+
+/**
  * Creates a status check for a action.
  *
  * @param inputs - The user-provided inputs for configuring the status check.
@@ -275,7 +316,7 @@ async function postOrUpdateIssueComment(
  */
 export async function createStatusCheck(
   inputs: Inputs,
-  report: Report
+  report: CTRFReport
 ): Promise<void> {
   core.info('Creating status check')
   let summary = core.summary.stringify()
@@ -285,6 +326,8 @@ export async function createStatusCheck(
   }
 
   try {
+    const formattedSummary = formatTestSummary(report.results.summary)
+
     await createCheckRun(
       context.repo.owner,
       context.repo.repo,
@@ -292,7 +335,7 @@ export async function createStatusCheck(
       inputs.statusCheckName,
       'completed',
       report.results.summary.failed > 0 ? 'failure' : 'success',
-      'Test Results',
+      formattedSummary,
       summary
     )
   } catch (error) {
@@ -343,8 +386,8 @@ export async function findExistingMarkedComment(
 
   const isLatest = Boolean(
     markedComment &&
-      comments.length > 0 &&
-      markedComment.id === comments[comments.length - 1].id
+    comments.length > 0 &&
+    markedComment.id === comments[comments.length - 1].id
   )
 
   return { comment: markedComment, isLatest }

@@ -3,14 +3,14 @@ import {
   ReportConditionals,
   PreviousResult,
   ReportInsightsExtra
-} from '../../src/types'
-import type { Report } from '../ctrf/core/types/ctrf'
+} from '../../src/types/index.js'
+import type { CTRFReport } from 'ctrf'
 import {
   numberOfReportsEnabled,
   isAnySkippedReportEnabled,
   isAnyFlakyOnlyReportEnabled,
   isAnyFailedOnlyReportEnabled
-} from '../../src/utils'
+} from '../../src/utils/index.js'
 
 /**
  * Adds boolean flags to determine what to display for failed, flaky and skipped test reports.
@@ -19,9 +19,12 @@ import {
  * @param inputs - The user-provided inputs.
  * @returns The enhanced CTRF report with display flags.
  */
-export function addFooterDisplayFlags(report: Report, inputs: Inputs): Report {
+export function addFooterDisplayFlags(
+  report: CTRFReport,
+  inputs: Inputs
+): CTRFReport {
   if (!report.extra) {
-    report.extra = {} as Record<string, unknown>
+    report.extra = {}
   }
 
   if (!report.extra?.reportConditionals) {
@@ -36,7 +39,7 @@ export function addFooterDisplayFlags(report: Report, inputs: Inputs): Report {
       showSkippedReports: true,
       showFailedReports: true,
       showFlakyReports: true
-    } as ReportConditionals
+    }
   } else {
     const conditionals = report.extra.reportConditionals as ReportConditionals
     conditionals.includeFailedReportCurrentFooter = false

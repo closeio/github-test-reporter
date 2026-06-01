@@ -1,15 +1,16 @@
+import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest'
 import * as core from '@actions/core'
 import { context } from '@actions/github'
-import { createCheckRun } from '../../src/client/github/checks'
+import { createCheckRun } from '../../src/client/github/checks.js'
 import {
   createStatusCheck,
   findExistingMarkedComment,
   handleComment,
   handleViewsAndComments
-} from '../../src/github/handler'
-import { Inputs } from '../../src/types'
-import { Report } from '../../src/ctrf/core/types/ctrf'
-import * as githubClient from '../../src/client/github'
+} from '../../src/github/handler.js'
+import { Inputs } from '../../src/types/index.js'
+import { Report } from '../../src/ctrf/core/types/ctrf.js'
+import * as githubClient from '../../src/client/github/index.js'
 import { components } from '@octokit/openapi-types'
 import Handlebars from 'handlebars'
 
@@ -92,8 +93,8 @@ beforeAll(() => {
   })
 })
 
-jest.mock('@actions/core')
-jest.mock('@actions/github', () => ({
+vi.mock('@actions/core')
+vi.mock('@actions/github', () => ({
   context: {
     repo: {
       owner: 'test-owner',
@@ -102,17 +103,17 @@ jest.mock('@actions/github', () => ({
     sha: 'test-sha'
   }
 }))
-jest.mock('../../src/client/github/checks', () => ({
-  createCheckRun: jest.fn()
+vi.mock('../../src/client/github/checks', () => ({
+  createCheckRun: vi.fn()
 }))
-jest.mock('../../src/client/github')
+vi.mock('../../src/client/github')
 
 describe('createStatusCheck', () => {
-  const mockCore = jest.mocked(core)
-  const mockCreateCheckRun = jest.mocked(createCheckRun)
+  const mockCore = vi.mocked(core)
+  const mockCreateCheckRun = vi.mocked(createCheckRun)
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockCore.summary.stringify.mockReturnValue('Test summary')
   })
 
@@ -125,7 +126,8 @@ describe('createStatusCheck', () => {
     const report: Report = {
       results: {
         summary: {
-          failed: 0
+          passed: 5,
+          skipped: 2
         }
       }
     } as Report
@@ -139,7 +141,7 @@ describe('createStatusCheck', () => {
       'Test Status',
       'completed',
       'success',
-      'Test Results',
+      '5 passed, 2 skipped',
       'Test summary'
     )
   })
@@ -167,7 +169,7 @@ describe('createStatusCheck', () => {
       'Test Status',
       'completed',
       'failure',
-      'Test Results',
+      '1 failed',
       'Test summary'
     )
   })
@@ -184,6 +186,7 @@ describe('createStatusCheck', () => {
     const report: Report = {
       results: {
         summary: {
+          passed: 10,
           failed: 0
         }
       }
@@ -201,17 +204,17 @@ describe('createStatusCheck', () => {
       'Test Status',
       'completed',
       'success',
-      'Test Results',
+      '10 passed',
       expect.stringMatching(/^a{65000}$/)
     )
   })
 })
 
 describe('findExistingMarkedComment', () => {
-  const mockListComments = jest.mocked(githubClient.listComments)
+  const mockListComments = vi.mocked(githubClient.listComments)
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('should return undefined when no comments exist', async () => {
@@ -378,15 +381,15 @@ describe('findExistingMarkedComment', () => {
 })
 
 describe('handleComment', () => {
-  const mockAddComment = jest.fn()
-  const mockUpdateComment = jest.fn()
-  const mockListComments = jest.fn()
+  const mockAddComment = vi.fn()
+  const mockUpdateComment = vi.fn()
+  const mockListComments = vi.fn()
 
   beforeEach(() => {
-    jest.resetAllMocks()
-    ;(githubClient.addCommentToIssue as jest.Mock) = mockAddComment
-    ;(githubClient.updateComment as jest.Mock) = mockUpdateComment
-    ;(githubClient.listComments as jest.Mock) = mockListComments
+    vi.resetAllMocks()
+    vi.mocked(githubClient.addCommentToIssue).mockImplementation(mockAddComment)
+    vi.mocked(githubClient.updateComment).mockImplementation(mockUpdateComment)
+    vi.mocked(githubClient.listComments).mockImplementation(mockListComments)
   })
 
   describe('New PR - All flags disabled', () => {
@@ -730,21 +733,13 @@ describe('handleComment', () => {
 })
 
 describe('handleViewsAndComments', () => {
-  const mockCore = jest.mocked(core)
+  const mockCore = vi.mocked(core)
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     context.payload ||= {}
     mockCore.summary.stringify.mockReturnValue('Test summary')
-    mockCore.summary.addRaw.mockImplementation(
-      jest
-        .requireActual<typeof core>('@actions/core')
-        .summary.addRaw.bind(core.summary)
-    )
-    mockCore.summary.addEOL.mockImplementation(
-      jest
-        .requireActual<typeof core>('@actions/core')
-        .summary.addEOL.bind(core.summary)
-    )
+    mockCore.summary.addRaw.mockReturnValue(mockCore.summary)
+    mockCore.summary.addEOL.mockReturnValue(mockCore.summary)
   })
 
   it('should create a check run with views and comments', async () => {

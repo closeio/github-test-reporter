@@ -1,5 +1,5 @@
-import { Report } from '../ctrf/core/types/ctrf'
-import { Inputs, PreviousResult } from '../types'
+import type { CTRFReport } from 'ctrf'
+import { Inputs, PreviousResult } from '../types/index.js'
 
 /**
  * Determines if previous results should be processed and metrics added to the CTRF report
@@ -30,9 +30,9 @@ export function shouldProcessPreviousResults(inputs: Inputs): boolean {
  * @returns The current report with previousResults populated
  */
 export function storePreviousResults(
-  currentReport: Report,
-  previousReports: Report[]
-): Report {
+  currentReport: CTRFReport,
+  previousReports: CTRFReport[]
+): CTRFReport {
   if (!currentReport || !Array.isArray(previousReports)) {
     throw new Error(
       'Invalid input: currentReport must be a valid CTRF report and previousReports must be an array'

@@ -1,7 +1,7 @@
-import { readReportFromFile } from '../ctrf/core/src/methods/read-reports'
+import { readReportFromFile } from '../ctrf/core/src/methods/read-reports.js'
 import * as core from '@actions/core'
-import type { Report } from '../ctrf/core/types/ctrf'
-import { Inputs } from '../types'
+import type { CTRFReport } from 'ctrf'
+import { Inputs } from '../types/index.js'
 
 /**
  * Handles baseline report functionality by reading a baseline report and
@@ -14,10 +14,10 @@ import { Inputs } from '../types'
  */
 export function handleBaseline(
   inputs: Inputs,
-  report: Report,
-  previousReports?: Report[]
-): { report: Report; baselineReport: Report | null } {
-  let baselineReport: Report | null = null
+  report: CTRFReport,
+  previousReports?: CTRFReport[]
+): { report: CTRFReport; baselineReport: CTRFReport | null } {
+  let baselineReport: CTRFReport | null = null
 
   if (
     inputs.baselineReportPath !== '' &&
@@ -89,9 +89,9 @@ export function handleBaseline(
  * @returns The baseline report to use for comparison, or null if not found
  */
 export function findBaselineReport(
-  reports: Report[],
+  reports: CTRFReport[],
   baseline?: number | string
-): Report | null {
+): CTRFReport | null {
   if (baseline === undefined) {
     return reports[0] || null
   }

@@ -1,5 +1,5 @@
-import { Report } from '../ctrf/core/types/ctrf'
-import { SlowestTest } from 'src/types'
+import type { CTRFReport } from 'ctrf'
+import { SlowestTest } from 'src/types/index.js'
 
 /**
  * Stores slowest tests in the current report's slowestTests array.
@@ -7,7 +7,7 @@ import { SlowestTest } from 'src/types'
  * @param currentReport The current CTRF report to enrich with slowest tests
  * @returns The current report with slowestTests populated
  */
-export function storeSlowestTests(currentReport: Report): Report {
+export function storeSlowestTests(currentReport: CTRFReport): CTRFReport {
   if (!currentReport.results?.tests) {
     return currentReport
   }

@@ -1,5 +1,5 @@
-import { Report } from '../ctrf/core/types/ctrf'
-import { SlackConfig } from 'src/types/integrations'
+import type { CTRFReport } from 'ctrf'
+import { SlackConfig } from 'src/types/integrations.js'
 import * as core from '@actions/core'
 import {
   sendTestResultsToSlack,
@@ -10,7 +10,7 @@ import {
 
 export async function handleSlackIntegration(
   config: SlackConfig,
-  report: Report
+  report: CTRFReport
 ): Promise<void> {
   core.startGroup('💬 Processing Slack Integration')
   core.info(`Processing action: ${config.action}`)
